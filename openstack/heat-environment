@@ -1,0 +1,13 @@
+parameters:
+  image: cirros
+  flavor: m1.tiny
+  key_name: mykey
+
+  public_net: public1
+
+  private_net_cidr: 10.0.0.0/24
+  private_net_gateway: 10.0.0.1
+  private_net_pool_start: 10.0.0.100
+  private_net_pool_end: 10.0.0.254
+
+  count: 2

@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+SETTINGS = {
+  #base_image: "centos/7",
+  base_image: "bento/centos-7.8",
+  cpu: 4,
+  memory: 10000
+}
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = SETTINGS[:base_image]
+  #config.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-2004_01.VirtualBox.box"
+
+  config.vm.network "private_network", ip: "172.28.128.2"
+
+  # https://gist.github.com/jonasschultzmblox/f15fe3c10769d5f269635a54394c84d4
+  #config.vbguest.auto_update = false
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+  config.vm.define "openstack.skyworkflows.com", primary: true do |admin|
+    admin.vm.hostname = "openstack.skyworkflows.com"
+
+    admin.vm.provision :shell, path: "bootstrap.sh"
+    admin.vm.synced_folder ".", "/home/vagrant/sync", disabled: false
+
+    admin.vm.provider "virtualbox" do |vm|
+      vm.cpus = SETTINGS[:cpu]
+      vm.memory = SETTINGS[:memory]
+
+      vm.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vm.customize ["modifyvm", :id, "--cableconnected1", "on"]
+      vm.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vm.customize ["modifyvm", :id, "--cableconnected2", "on"]
+      vm.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      #vm.customize ["modifyvm", :id, "--natdnshostresolver2", "on"]
+      #vm.customize ["modifyvm", :id, "--natdnsproxy2", "on"]
+    end
+  end
+end
