@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-while [[ $# -gt 0 ]]
-do
+while [[ $# -gt 0 ]]; do
 i="$1"
 
 case $i in
@@ -29,17 +28,15 @@ case $i in
 esac
 done
 
-if [ -z $IMAGE ];
-then
-    echo "Error: Image is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-16.04-server-cloudimg-amd64.img -a swm-1.0.0.tar.gz"
+if [ -z $IMAGE ]; then
+    echo "ERROR: Image is not specified"
+    echo "Usage: ${0##*/} -i ubuntu-21.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
-if [ -z $ARCHIVE ];
-then
-    echo "Error: Archive is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-16.04-server-cloudimg-amd64.img -a swm-1.0.0.tar.gz"
+if [ -z $ARCHIVE ]; then
+    echo "ERROR: Archive is not specified"
+    echo "Usage: ${0##*/} -i ubuntu-21.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
@@ -50,8 +47,7 @@ export LIBGUESTFS_BACKEND=direct
 
 mkdir -p ${mountpoint} > /dev/null 2>&1
 
-for i in {1..2};
-do
+for i in {1..2}; do
     umount -f ${mountpoint}/sys         > /dev/null 2>&1;
     umount -f ${mountpoint}/dev/pts     > /dev/null 2>&1;
     umount -f ${mountpoint}/dev         > /dev/null 2>&1;
@@ -71,8 +67,8 @@ mount --bind /proc      ${mountpoint}/proc
 NONCE=$(date '+%s')
 mkdir -p /tmp/${NONCE}
 tar -C /tmp/${NONCE} -xvzf ${ARCHIVE} --strip-components 1
-sed -i '/exit.*/d' /tmp/${NONCE}/scripts/swm.env
-source /tmp/${NONCE}/scripts/swm.env > /dev/null 2>&1
+sed -i '/exit.*/d' /tmp/${NONCE}/swm.env
+source /tmp/${NONCE}/swm.env > /dev/null 2>&1
 rm -rf /tmp/${NONCE}
 
 cp $ARCHIVE ${mountpoint}/opt/
@@ -135,7 +131,7 @@ systemctl enable swm
 EOF
 
 # Pull default docker image for tests purposes
-docker pull ubuntu:16.04
+docker pull ubuntu:21.04
 
 umount -f ${mountpoint}/sys
 umount -f ${mountpoint}/dev/pts

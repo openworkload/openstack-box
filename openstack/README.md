@@ -1,4 +1,4 @@
-SkyWM OpenStack
+SkyWM OpenStack Development Setup
 ===============
 
 Requirements
@@ -25,29 +25,36 @@ Run a box
 ### Remount sync directory after box restart
     $ vagrant reload
 
-### Test
+### Simple test of openstack setup
 Run command inside OpenStack's box:
     $ source /etc/kolla/admin-openrc.sh
     $ cd /home/vagrant/sync
     $ openstack stack create -e heat-environment -t heat-template.yaml demo-stack
 
-Prepare compute image
+Prepare compute image for OpenStack development setup
 ---------------------
 
-* Prepare SWM release tarball and copy it to directory swm-tests/openstack:
-    $ cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz swm-tests/openstack/
+* Prepare SWM worker release tarball and copy it to directory swm-util/openstack:
+    - For development setup:
+        $ make release
+        $ ./scripts/setup.linux -t -a
+        $ cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../swm-util/openstack/
+    - For regular setup:
+        $ cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz swm-util/openstack/
 
-* Download image that will be used for compute VMs to swm-tests/openstack:
-    $ cd swm-tests/openstack
-    $ wget http://cloud-images.ubuntu.com/minimal/releases/xenial/release-20180705/ubuntu-16.04-minimal-cloudimg-amd64-disk1.img
+* Download image that will be used for compute VMs to swm-util/openstack:
+    $ cd swm-util/openstack
+    $ wget http://cloud-images.ubuntu.com/minimal/releases/hirsute/release/ubuntu-21.04-minimal-cloudimg-amd64.img
 
 * Run command:
+    $ vagrant ssh
+    $ cd sync
     $ sudo bash
-    $ ./image-provision.sh -i ubuntu-16.04-minimal-cloudimg-amd64-disk1.img -a swm-${SWM_VERSION}-worker.tar.gz
+    $ ./image-provision.sh -i ubuntu-21.04-minimal-cloudimg-amd64.img -a swm-worker.tar.gz
 
 * Load the prepared image to OpenStack:
-    $ vagrant ssh
-    $ openstack image create --public --disk-format qcow2 --container-format bare --file ubuntu-16.04-minimal-cloudimg-amd64-disk1.img ubuntu-16.04
+    $ source /etc/kolla/admin-openrc.sh
+    $ openstack image create --public --disk-format qcow2 --container-format bare --file ubuntu-21.04-minimal-cloudimg-amd64.img ubuntu-21.04
 
     Image format type can be found with "file -k".
 
@@ -58,6 +65,7 @@ Note that the compute node image must run docker on port 6000
 
 Troubleshooting
 ---------------
+    $ vagrant reload
     $ vagrant vbguest
     $ vagrant provision
     $ vagrant ssh
