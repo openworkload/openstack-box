@@ -98,6 +98,7 @@ locale-gen en_US.UTF-8
 
 apt-get --yes install linux-modules-extra-4.15.0-32-generic # nfsd module
 apt-get --yes install nfs-kernel-server nfs-common
+apt-get --yes install vim mc
 update-rc.d nfs-kernel-server enable
 
 apt-get --yes install docker docker.io
