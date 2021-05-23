@@ -67,8 +67,8 @@ mount --bind /proc      ${mountpoint}/proc
 NONCE=$(date '+%s')
 mkdir -p /tmp/${NONCE}
 tar -C /tmp/${NONCE} -xvzf ${ARCHIVE} --strip-components 1
-sed -i '/exit.*/d' /tmp/${NONCE}/swm.env
-source /tmp/${NONCE}/swm.env > /dev/null 2>&1
+sed -i '/exit.*/d' /tmp/${NONCE}/scripts/swm.env
+source /tmp/${NONCE}/scripts/swm.env > /dev/null 2>&1
 rm -rf /tmp/${NONCE}
 
 cp $ARCHIVE ${mountpoint}/opt/
@@ -96,9 +96,10 @@ apt-get --yes --purge remove at snapd lvm2 lxcfs open-iscsi policykit-1
 apt-get --yes install locales
 locale-gen en_US.UTF-8
 
-apt-get --yes install linux-modules-extra-4.15.0-32-generic # nfsd module
+#apt-get --yes install linux-modules-extra-4.15.0-32-generic # nfsd module, FIXME
 apt-get --yes install nfs-kernel-server nfs-common
-apt-get --yes install vim mc
+apt-get --yes install nfs-kernel-server nfs-common
+IMAGE=ubuntu-21.04-minimal-cloudimg-amd64
 update-rc.d nfs-kernel-server enable
 
 apt-get --yes install docker docker.io
