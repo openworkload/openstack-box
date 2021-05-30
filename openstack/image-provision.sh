@@ -96,7 +96,7 @@ apt-get --yes --purge remove at snapd lvm2 lxcfs open-iscsi policykit-1
 apt-get --yes install locales
 locale-gen en_US.UTF-8
 
-#apt-get --yes install linux-modules-extra-4.15.0-32-generic # nfsd module, FIXME
+apt-get --yes install linux-modules-extra-*-generic # nfsd module
 apt-get --yes install nfs-kernel-server nfs-common
 apt-get --yes install nfs-kernel-server nfs-common
 IMAGE=ubuntu-21.04-minimal-cloudimg-amd64

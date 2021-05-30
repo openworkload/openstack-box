@@ -1,5 +1,5 @@
 SWM OpenStack Development Setup
-===============
+===============================
 
 Requirements
 ------------
@@ -43,7 +43,7 @@ cd /home/vagrant/sync
 openstack stack create -e heat-environment -t heat-template.yaml demo-stack
 ```
 Prepare compute image for OpenStack development setup
----------------------
+-----------------------------------------------------
 
 * Prepare SWM worker release tarball and copy it to directory swm-util/openstack:
 
@@ -77,12 +77,12 @@ IMAGE=ubuntu-21.04-minimal-cloudimg-amd64
 
 * Customize for development purposes (if needed):
 ```console
+sudo bash
 ./image-mount.sh -i ${IMAGE}.img
-mkdir /mnt/${IMAGE}/home/${USER}/.ssh
-chmod 700 /mnt/${IMAGE}/home/${USER}/.ssh
-cat ~/.ssh/id_rsa.pub >> /mnt/${IMAGE}/home/${USER}/.ssh/authorized_keys
-chmod 600 /mnt/${IMAGE}/home/${USER}/.ssh/authorized_keys
-echo "${USER} ALL = (ALL) ALL" >> /mnt/${IMAGE}/etc/sudoers
+mkdir /mnt/${IMAGE}/root/.ssh
+chmod 700 /mnt/${IMAGE}/root/.ssh
+vim /mnt/${IMAGE}/root/.ssh/authorized_keys  # add public key
+chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 ./image-umount.sh -i ${IMAGE}.img
 ```
 
@@ -91,7 +91,6 @@ echo "${USER} ALL = (ALL) ALL" >> /mnt/${IMAGE}/etc/sudoers
 source /etc/kolla/admin-openrc.sh
 openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-21.04
 ```
-   
 Image format type can be found with "file -k". 
 Note that the compute node image must run docker on port 6000 if the job is going to run in docker containers.
 
@@ -100,8 +99,8 @@ Troubleshooting
 ---------------
 ```console
 vagrant reload
-vagrant ssh -c "docker restart nova_libvirt"
 vagrant ssh -c "docker restart keepalived"
+vagrant ssh -c "docker restart nova_libvirt"
 vagrant vbguest
 vagrant provision
 ```
