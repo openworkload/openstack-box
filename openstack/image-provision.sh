@@ -30,13 +30,13 @@ done
 
 if [ -z $IMAGE ]; then
     echo "ERROR: Image is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-21.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i ubuntu-18.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
 if [ -z $ARCHIVE ]; then
     echo "ERROR: Archive is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-21.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i ubuntu-18.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
@@ -99,7 +99,6 @@ locale-gen en_US.UTF-8
 apt-get --yes install linux-modules-extra-*-generic # nfsd module
 apt-get --yes install nfs-kernel-server nfs-common
 apt-get --yes install nfs-kernel-server nfs-common
-IMAGE=ubuntu-21.04-minimal-cloudimg-amd64
 update-rc.d nfs-kernel-server enable
 
 apt-get --yes install docker docker.io
@@ -133,7 +132,7 @@ systemctl enable swm
 EOF
 
 # Pull default docker image for tests purposes
-docker pull ubuntu:21.04
+docker pull ubuntu:18.04
 
 umount -f ${mountpoint}/sys
 umount -f ${mountpoint}/dev/pts

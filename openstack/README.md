@@ -61,9 +61,8 @@ cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz swm-util/openstack/
 
 * Download image that will be used for compute VMs to swm-util/openstack:
 ```console
-IMAGE=ubuntu-21.04-minimal-cloudimg-amd64
 cd swm-util/openstack
-wget http://cloud-images.ubuntu.com/minimal/releases/hirsute/release/${IMAGE}.img
+wget http://cloud-images.ubuntu.com/minimal/releases/bionic/release/ubuntu-18.04-minimal-cloudimg-amd64.img
 ```
 
 * Provision the image with swm:
@@ -71,7 +70,7 @@ wget http://cloud-images.ubuntu.com/minimal/releases/hirsute/release/${IMAGE}.im
 vagrant ssh
 sudo bash
 cd /home/vagrant/sync
-IMAGE=ubuntu-21.04-minimal-cloudimg-amd64
+IMAGE=ubuntu-18.04-minimal-cloudimg-amd64
 ./image-provision.sh -i ${IMAGE}.img -a swm-worker.tar.gz
 ```
 
@@ -89,7 +88,7 @@ chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 * Load the prepared image to OpenStack:
 ```console
 source /etc/kolla/admin-openrc.sh
-openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-21.04
+openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-18.04
 ```
 Image format type can be found with "file -k". 
 Note that the compute node image must run docker on port 6000 if the job is going to run in docker containers.
