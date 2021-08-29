@@ -90,7 +90,7 @@ chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 source /etc/kolla/admin-openrc.sh
 openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-18.04
 ```
-Image format type can be found with "file -k". 
+Image format type can be found with "file -k".
 Note that the compute node image must run docker on port 6000 if the job is going to run in docker containers.
 
 

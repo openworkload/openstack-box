@@ -96,10 +96,10 @@ apt-get --yes --purge remove at snapd lvm2 lxcfs open-iscsi policykit-1
 apt-get --yes install locales
 locale-gen en_US.UTF-8
 
-apt-get --yes install linux-modules-extra-*-generic # nfsd module
-apt-get --yes install nfs-kernel-server nfs-common
-apt-get --yes install nfs-kernel-server nfs-common
-update-rc.d nfs-kernel-server enable
+#apt-get --yes install linux-modules-extra-*-generic # nfsd module
+#apt-get --yes install nfs-kernel-server nfs-common
+#apt-get --yes install nfs-kernel-server nfs-common
+#update-rc.d nfs-kernel-server enable
 
 apt-get --yes install docker docker.io
 echo 'DOCKER_OPTS="-H tcp://127.0.0.1:6000"' >> /etc/default/docker
@@ -132,7 +132,7 @@ systemctl enable swm
 EOF
 
 # Pull default docker image for tests purposes
-docker pull ubuntu:18.04
+#docker pull ubuntu:18.04
 
 umount -f ${mountpoint}/sys
 umount -f ${mountpoint}/dev/pts
