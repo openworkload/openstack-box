@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-#
-# Copyright (c) 2016-2017 Sky Workflows. All Rights Reserved.
-#
-# This software is the confidential and proprietary information of
-# Sky Workflows ("Confidential Information"). You shall not
-# disclose such Confidential Information and shall use it only in
-# accordance with the terms of the license agreement you entered into
-# with Sky Workflows or its subsidiaries.
-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 # Usage example:
 # benchmark.py -s ../setups/benchmark-simple.json -t job=ID1:2 -t job=ID2:2 -t node=ID1:4
 

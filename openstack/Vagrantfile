@@ -19,8 +19,8 @@ Vagrant.configure(2) do |config|
   #config.vbguest.auto_update = false
   config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
-  config.vm.define "openstack.skyworkflows.com", primary: true do |admin|
-    admin.vm.hostname = "openstack.skyworkflows.com"
+  config.vm.define "openstack.openworkload.com", primary: true do |admin|
+    admin.vm.hostname = "openstack.openworkload.com"
 
     admin.vm.provision :shell, path: "bootstrap.sh"
     admin.vm.synced_folder ".", "/home/vagrant/sync", disabled: false

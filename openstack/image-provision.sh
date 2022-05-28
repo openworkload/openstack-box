@@ -85,7 +85,7 @@ echo "nameserver 8.8.8.8" > /run/resolvconf/resolv.conf
 echo "nameserver 8.8.8.8" > /run/systemd/resolve/stub-resolv.conf
 
 echo "127.0.0.1       localhost.localdomain localhost" > /etc/hosts
-echo "127.0.0.1       openstack.skyworkflows.com openstack" >> /etc/hosts
+echo "127.0.0.1       openstack.openworkload.com openstack" >> /etc/hosts
 
 apt-get --yes update
 apt-get --yes autoremove
