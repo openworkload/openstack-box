@@ -2,21 +2,31 @@
 # vi: set ft=ruby :
 
 SETTINGS = {
-  #base_image: "centos/7",
-  base_image: "bento/centos-7.8",
+  base_image: "bento/rockylinux-8.6",
   cpu: 4,
-  memory: 24000
+  memory: 22000
 }
 
-
 Vagrant.configure(2) do |config|
+
+  config.trigger.before [:up] do |trigger|
+    if Vagrant.has_plugin?("vagrant-vbguest")
+      puts 'Plugin vagrant-vbguest is already installed'
+    else
+      system('vagrant plugin install vagrant-vbguest')
+    end
+  end
+
+  config.vbguest.installer_options = { allow_kernel_upgrade: true }
+  config.vbguest.installer_hooks[:before_rebuild] = [
+    "echo DNS1=8.8.8.8 >> /etc/sysconfig/network-scripts/ifcfg-eth0",
+    "systemctl restart NetworkManager",
+    "yum update kernel",
+    "yum install kernel-headers kernel-devel gcc make perl elfutils-libelf-devel bzip2 tar -y"
+  ]
+
   config.vm.box = SETTINGS[:base_image]
-  #config.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-2004_01.VirtualBox.box"
-
   config.vm.network "private_network", ip: "172.28.128.2"
-
-  # https://gist.github.com/jonasschultzmblox/f15fe3c10769d5f269635a54394c84d4
-  #config.vbguest.auto_update = false
   config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
   config.vm.define "openstack.openworkload.com", primary: true do |admin|
@@ -34,8 +44,8 @@ Vagrant.configure(2) do |config|
       vm.customize ["modifyvm", :id, "--nictype2", "virtio"]
       vm.customize ["modifyvm", :id, "--cableconnected2", "on"]
       vm.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
-      #vm.customize ["modifyvm", :id, "--natdnshostresolver2", "on"]
-      #vm.customize ["modifyvm", :id, "--natdnsproxy2", "on"]
+      vm.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vm.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
     end
   end
 end

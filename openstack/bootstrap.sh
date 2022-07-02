@@ -52,18 +52,36 @@ EOF
     udevadm control --reload-rules
 
     yum -y install epel-release
-    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
 
-    yum -y install MySQL-python mariadb
-    yum -y install git tmux vim-enhanced
-    yum -y install python-pip python-devel
-    yum -y install gcc openssl-devel libffi-devel libxml2-devel libxslt-devel
-    yum -y install htop net-tools bridge-utils openvswitch tcpdump
+    yum -y groupinstall "Development Tools"
+    yum -y install mariadb
+    yum -y install git tmux vim-enhanced mc
+    yum -y install openssl-devel libffi-devel libxml2-devel libxslt-devel
+    yum -y install htop net-tools bridge-utils tcpdump
     yum -y install mlocate
 
     # Install guestmount for image provision
     yum -y install libguestfs-tools
     systemctl disable libvirtd
+
+    # Switch to python3 by default
+    yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
+    alternatives --install /usr/bin/python python /usr/bin/python2 50
+    alternatives --install /usr/bin/python python /usr/bin/python3.6 60
+    sed -i 's:#!/usr/bin/python:#!/usr/bin/python2.7:g' /usr/bin/yum
+    sed -i 's:#! /usr/bin/python:#!/usr/bin/python2.7:g' /usr/libexec/urlgrabber-ext-down
+    sed -i 's:#!/usr/bin/python:#!/usr/bin/python2.7:g' /bin/yum-config-manager
+
+    # For openvswitch package:
+    #yum -y install https://repos.fedorapeople.org/repos/openstack/openstack-victoria/rdo-release-victoria-4.el8.noarch.rpm
+    yum -y install rdma-core-devel unbound-devel
+    yum install desktop-file-utils libcap-ng-devel libmnl-devel numactl-devel openssl-devel rdma-core-devel unbound-devel -y
+    rpmbuild --rebuild  http://ftp.redhat.com/pub/redhat/linux/enterprise/8Base/en/Fast-Datapath/SRPMS/openvswitch2.13-2.13.0-79.el8fdp.src.rpm
+    yum install selinux-policy-devel -y
+    rpmbuild --rebuild http://ftp.redhat.com/pub/redhat/linux/enterprise/8Base/en/Fast-Datapath/SRPMS/openvswitch-selinux-extra-policy-1.0-28.el8fdp.src.rpm
+    yum localinstall /root/rpmbuild/RPMS/noarch/openvswitch-selinux-extra-policy-1.0-28.el8.noarch.rpm /root/rpmbuild/RPMS/x86_64/openvswitch2.13-2.13.0-79.el8.x86_64.rpm -y
+    systemctl enable --now openvswitch
 }
 
 function configure_docker {
@@ -89,46 +107,47 @@ function configure_kolla {
 
     #rpm -e python-ipaddress pyparsing --nodeps
     #rpm -e python-ipaddress --nodeps
-    pip install --upgrade pyparsing
+    pip3 install --upgrade pip
+    pip3 install --upgrade pyparsing
 
-    pip install --upgrade pip
-    pip install --upgrade setuptools
-    pip install --upgrade cmd2
-    #pip install --upgrade ipaddress
+    pip3 install --upgrade setuptools
+    pip3 install --upgrade cmd2
+    #pip3 install --upgrade ipaddress
 
-    pip install --upgrade "ansible==2.3" tox
+    pip3 install --upgrade "ansible==2.9.0" tox
 
     # Otherwise installation of python-openstackclient fails
     rpm -e PyYAML atomic-registries || true
 
-    pip install --upgrade "python-openstackclient==3.12.0"
-    pip install --upgrade "python-neutronclient==6.5.0"
-    pip install --upgrade "python-heatclient==1.12.0"
-    pip install --upgrade "python-cloudkittyclient==1.1.0"
-    pip install --upgrade "python-ceilometerclient==2.9.0"
-    pip install --upgrade "gnocchiclient==6.0.0"
-    pip install --upgrade "openstacksdk==0.17.2"
+    pip3 install --upgrade "python-openstackclient==3.12.0"
+    pip3 install --upgrade "python-neutronclient==6.5.0"
+    pip3 install --upgrade "python-heatclient==1.12.0"
+    pip3 install --upgrade "python-cloudkittyclient==1.1.0"
+    pip3 install --upgrade "python-ceilometerclient==2.9.0"
+    pip3 install --upgrade "gnocchiclient==6.0.0"
+    pip3 install --upgrade "openstacksdk==0.17.2"
 
     # Workaround for https://github.com/docker/docker-py/issues/1353
-    #pip uninstall -y docker docker-py
-    #pip install docker
+    #pip3 uninstall -y docker docker-py
+    #pip3 install docker
 
     cd /home/vagrant
     rm -fr kolla
     git clone http://github.com/openstack/kolla
     cd kolla
-    git checkout stable/pike
+    #git checkout stable/pike
+    git checkout stable/victoria
 
     cd /home/vagrant
     rm -fr kolla-ansible
     git clone http://github.com/openstack/kolla-ansible
     cd kolla-ansible
-    git checkout stable/pike
+    git checkout stable/victoria
 
-    pip install /home/vagrant/kolla-ansible
-    pip install /home/vagrant/kolla
+    pip3 install /home/vagrant/kolla-ansible
+    pip3 install /home/vagrant/kolla
 
-    tox -c /home/vagrant/kolla/tox.ini -e genconfig
+    python3 -m tox -c /home/vagrant/kolla/tox.ini -e genconfig
 
     cp -r /home/vagrant/kolla-ansible/etc/kolla/ /etc/kolla
     cp -r /home/vagrant/kolla/etc/kolla/* /etc/kolla
@@ -137,7 +156,7 @@ function configure_kolla {
     /home/vagrant/kolla-ansible/tools/generate_passwords.py
 
     ### Set release version
-    sed -i -r "s,^[# ]*openstack_release:.+$,openstack_release: \"pike\"," /etc/kolla/globals.yml
+    sed -i -r "s,^[# ]*openstack_release:.+$,openstack_release: \"victoria\"," /etc/kolla/globals.yml
     ### Set network interfaces
     # Interface for API,  will be used by OpenStack to bind services on it
     sed -i -r "s,^[# ]*network_interface:.+$,network_interface: \"eth1\"," /etc/kolla/globals.yml
@@ -188,6 +207,7 @@ EOF
 }
 
 function openstack_deploy {
+    export PATH=/usr/local/bin:$PATH
     kolla-ansible pull
     kolla-ansible prechecks
     kolla-ansible deploy

@@ -10,12 +10,7 @@ Requirements
 Run a box
 ---------
 
-### Prepare
-```console
-vagrant plugin install vagrant-vbguest
-```
-
-### Run
+### Start VM
 ```console
 vagrant up
 ```
