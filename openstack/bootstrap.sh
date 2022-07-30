@@ -5,7 +5,11 @@
 # git clone kolla and kolla-ansible repos, deploy openstack and
 # initialize demo instance in it.
 
+OPENSTACK_VERSION=yoga
+
 set -e
+
+export PATH=/usr/local/bin:$PATH
 
 function fix_dns {
     echo "nameserver 8.8.8.8" > /etc/resolv.conf
@@ -65,23 +69,12 @@ EOF
     yum -y install libguestfs-tools
     systemctl disable libvirtd
 
-    # Switch to python3 by default
     yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
-    alternatives --install /usr/bin/python python /usr/bin/python2 50
-    alternatives --install /usr/bin/python python /usr/bin/python3.6 60
-    sed -i 's:#!/usr/bin/python:#!/usr/bin/python2.7:g' /usr/bin/yum
-    sed -i 's:#! /usr/bin/python:#!/usr/bin/python2.7:g' /usr/libexec/urlgrabber-ext-down
-    sed -i 's:#!/usr/bin/python:#!/usr/bin/python2.7:g' /bin/yum-config-manager
+    ln -sf /bin/python3 /usr/bin/python
 
-    # For openvswitch package:
-    #yum -y install https://repos.fedorapeople.org/repos/openstack/openstack-victoria/rdo-release-victoria-4.el8.noarch.rpm
-    yum -y install rdma-core-devel unbound-devel
-    yum install desktop-file-utils libcap-ng-devel libmnl-devel numactl-devel openssl-devel rdma-core-devel unbound-devel -y
-    rpmbuild --rebuild  http://ftp.redhat.com/pub/redhat/linux/enterprise/8Base/en/Fast-Datapath/SRPMS/openvswitch2.13-2.13.0-79.el8fdp.src.rpm
-    yum install selinux-policy-devel -y
-    rpmbuild --rebuild http://ftp.redhat.com/pub/redhat/linux/enterprise/8Base/en/Fast-Datapath/SRPMS/openvswitch-selinux-extra-policy-1.0-28.el8fdp.src.rpm
-    yum localinstall /root/rpmbuild/RPMS/noarch/openvswitch-selinux-extra-policy-1.0-28.el8.noarch.rpm /root/rpmbuild/RPMS/x86_64/openvswitch2.13-2.13.0-79.el8.x86_64.rpm -y
-    systemctl enable --now openvswitch
+    #yum -y install https://repos.fedorapeople.org/repos/openstack/openstack-yoga/rdo-release-yoga-1.el8.noarch.rpm
+    #yum -y install openvswitch libibverbs
+    #systemctl enable --now openvswitch
 }
 
 function configure_docker {
@@ -90,11 +83,12 @@ function configure_docker {
     # Also upgrade device-mapper here because of:
     # https://github.com/docker/docker/issues/12108
     # Upgrade lvm2 to get device-mapper installed
-    yum -y install docker-ce docker-ce-cli containerd.io lvm2 device-mapper
+    #yum -y install docker-ce docker-ce-cli containerd.io lvm2 device-mapper
+    yum -y install docker-ce docker-ce-cli containerd.io
 
-    grep -q MountFlags /usr/lib/systemd/system/docker.service &&
-        sed -i 's|^MountFlags=.*|MountFlags=shared|' /usr/lib/systemd/system/docker.service ||
-        sed -i '/\[Service\]/a MountFlags=shared' /usr/lib/systemd/system/docker.service
+    #grep -q MountFlags /usr/lib/systemd/system/docker.service &&
+    #    sed -i 's|^MountFlags=.*|MountFlags=shared|' /usr/lib/systemd/system/docker.service ||
+    #    sed -i '/\[Service\]/a MountFlags=shared' /usr/lib/systemd/system/docker.service
 
     usermod -aG docker vagrant
 
@@ -105,44 +99,35 @@ function configure_docker {
 
 function configure_kolla {
 
-    #rpm -e python-ipaddress pyparsing --nodeps
-    #rpm -e python-ipaddress --nodeps
     pip3 install --upgrade pip
     pip3 install --upgrade pyparsing
-
     pip3 install --upgrade setuptools
     pip3 install --upgrade cmd2
-    #pip3 install --upgrade ipaddress
-
-    pip3 install --upgrade "ansible==2.9.0" tox
+    pip3 install --upgrade ansible
+    pip3 install --upgrade tox
 
     # Otherwise installation of python-openstackclient fails
-    rpm -e PyYAML atomic-registries || true
+    pip3 install --ignore-installed PyYAML
 
-    pip3 install --upgrade "python-openstackclient==3.12.0"
-    pip3 install --upgrade "python-neutronclient==6.5.0"
-    pip3 install --upgrade "python-heatclient==1.12.0"
-    pip3 install --upgrade "python-cloudkittyclient==1.1.0"
+    pip3 install --upgrade "python-openstackclient==5.8.0"
+    pip3 install --upgrade "python-neutronclient==7.8.0"
+    pip3 install --upgrade "python-heatclient==2.5.1"
+    pip3 install --upgrade "python-cloudkittyclient==4.5.0"
     pip3 install --upgrade "python-ceilometerclient==2.9.0"
-    pip3 install --upgrade "gnocchiclient==6.0.0"
-    pip3 install --upgrade "openstacksdk==0.17.2"
-
-    # Workaround for https://github.com/docker/docker-py/issues/1353
-    #pip3 uninstall -y docker docker-py
-    #pip3 install docker
+    pip3 install --upgrade "gnocchiclient==7.0.7"
+    pip3 install --upgrade "openstacksdk==0.100.0"
 
     cd /home/vagrant
     rm -fr kolla
     git clone http://github.com/openstack/kolla
     cd kolla
-    #git checkout stable/pike
-    git checkout stable/victoria
+    git checkout stable/$OPENSTACK_VERSION
 
     cd /home/vagrant
     rm -fr kolla-ansible
     git clone http://github.com/openstack/kolla-ansible
     cd kolla-ansible
-    git checkout stable/victoria
+    git checkout stable/$OPENSTACK_VERSION
 
     pip3 install /home/vagrant/kolla-ansible
     pip3 install /home/vagrant/kolla
@@ -152,11 +137,10 @@ function configure_kolla {
     cp -r /home/vagrant/kolla-ansible/etc/kolla/ /etc/kolla
     cp -r /home/vagrant/kolla/etc/kolla/* /etc/kolla
 
-    yum install python-ipaddress -y # otherwise the module cannot be found by the next tool
     /home/vagrant/kolla-ansible/tools/generate_passwords.py
 
     ### Set release version
-    sed -i -r "s,^[# ]*openstack_release:.+$,openstack_release: \"victoria\"," /etc/kolla/globals.yml
+    sed -i -r "s,^[# ]*openstack_release:.+$,openstack_release: \"$OPENSTACK_VERSION\"," /etc/kolla/globals.yml
     ### Set network interfaces
     # Interface for API,  will be used by OpenStack to bind services on it
     sed -i -r "s,^[# ]*network_interface:.+$,network_interface: \"eth1\"," /etc/kolla/globals.yml
@@ -171,6 +155,10 @@ function configure_kolla {
     sed -i -r "s,^[# ]*enable_gnocchi:.+$,enable_gnocchi: \"yes\"," /etc/kolla/globals.yml
     sed -i -r "s,^[# ]*enable_ceilometer:.+$,enable_ceilometer: \"yes\"," /etc/kolla/globals.yml
     sed -i -r "s,^[# ]*enable_cloudkitty:.+$,enable_cloudkitty: \"yes\"," /etc/kolla/globals.yml
+
+    # We don't enable cloudkitty in the dashboard because of this opened issue: https://storyboard.openstack.org/#!/story/2009924
+    sed -i -r "s,^[# ]*enable_horizon_cloudkitty:.+$,enable_horizon_cloudkitty: \"no\"," /etc/kolla/globals.yml
+
     ### Configure services
     echo 'cloudkitty_collector_backend: "gnocchi"' >> /etc/kolla/globals.yml
     ### Reduce # of threads
@@ -207,11 +195,29 @@ EOF
 }
 
 function openstack_deploy {
-    export PATH=/usr/local/bin:$PATH
+    # https://docs.openstack.org/kolla-ansible/yoga/user/quickstart.html
+    # https://www.linuxjournal.com/content/build-versatile-openstack-lab-kolla
+    cp /home/vagrant/kolla-ansible/ansible/inventory/all-in-one /etc/kolla/
+    sed -i '1s/^/\nlocalhost ansible_python_interpreter=python\n\n/' /etc/kolla/all-in-one
+
+    mkdir /etc/ansible
+    cat > /etc/ansible/ansible.cfg <<EOF
+[defaults]
+host_key_checking=False
+pipelining=True
+forks=100
+EOF
+
+    pushd /etc/kolla
+
+    kolla-ansible install-deps
     kolla-ansible pull
-    kolla-ansible prechecks
-    kolla-ansible deploy
-    kolla-ansible post-deploy
+    kolla-ansible -i all-in-one bootstrap-servers
+    kolla-ansible -i all-in-one prechecks
+    kolla-ansible -i all-in-one deploy
+    kolla-ansible -i all-in-one post-deploy
+
+    popd
 }
 
 function openstack_initialize {
@@ -227,3 +233,4 @@ configure_kolla
 openstack_deploy
 openstack_initialize
 
+exit 0

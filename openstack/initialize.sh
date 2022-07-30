@@ -5,15 +5,14 @@
 # configures networking and nova quotas to allow 40 m1.small instances
 # to be created.
 
-IMAGE_URL=http://download.cirros-cloud.net/0.4.0/
-IMAGE=cirros-0.4.0-x86_64-disk.img
+IMAGE_URL=http://download.cirros-cloud.net/0.5.2/
+IMAGE=cirros-0.5.2-x86_64-disk.img
 IMAGE_NAME=cirros
 IMAGE_TYPE=linux
 
 EXT_NET_CIDR="172.28.128.0/24"
 EXT_NET_RANGE="start=172.28.128.150,end=172.28.128.200"
 EXT_NET_GATEWAY="172.28.128.2"
-
 HORIZON_URL="172.28.128.2"
 
 # Sanitize language settings to avoid commands bailing out
@@ -22,6 +21,9 @@ unset LANG
 unset LANGUAGE
 LC_ALL=C
 export LC_ALL
+
+export PATH=/usr/local/bin:$PATH
+
 for i in curl openstack; do
     if [[ ! $(type ${i} 2>/dev/null) ]]; then
         if [ "${i}" == 'curl' ]; then
@@ -33,7 +35,7 @@ for i in curl openstack; do
     fi
 done
 # Move to top level directory
-REAL_PATH=$(python -c "import os,sys;print os.path.realpath('$0')")
+REAL_PATH=$(python -c "import os,sys;print(os.path.realpath('$0'))")
 cd "$(dirname "$REAL_PATH")/.."
 
 # Test for credentials set
@@ -116,36 +118,36 @@ if ! openstack flavor list | grep -q m1.tiny; then
 fi
 
 # Initialize ratings
-openstack rating module-enable --name hashmap
+openstack rating module enable hashmap
 
 # Add flavors costs per instance
-openstack rating hashmap-service-create --name compute
-SERVICE_ID=$(openstack rating hashmap-service-list | grep compute | awk -F'|' '{ print $3}' | sed 's/ //g')
+openstack rating hashmap service create compute
+SERVICE_ID=$(openstack rating hashmap service list | grep compute | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-openstack rating hashmap-field-create --service-id ${SERVICE_ID} --name flavor
-FIELD_ID=$(openstack rating hashmap-field-list --service-id  ${SERVICE_ID} | grep flavor | awk -F'|' '{ print $3}' | sed 's/ //g')
+openstack rating hashmap field create ${SERVICE_ID} flavor
+FIELD_ID=$(openstack rating hashmap field list ${SERVICE_ID} | grep flavor | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-openstack rating hashmap-mapping-create --field-id ${FIELD_ID} --type flat --cost 0.1 --value m1.micro
-openstack rating hashmap-mapping-create --field-id ${FIELD_ID} --type flat --cost 0.2 --value m1.tiny
-openstack rating hashmap-mapping-create --field-id ${FIELD_ID} --type flat --cost 0.3 --value m1.small
+openstack rating hashmap mapping create --field-id ${FIELD_ID} -t flat --value m1.micro 0.1
+openstack rating hashmap mapping create --field-id ${FIELD_ID} -t flat --value m1.tiny 0.2
+openstack rating hashmap mapping create --field-id ${FIELD_ID} -t flat --value m1.small 0.3
 
 # add ingoing bandwidth costs per MB
-openstack rating hashmap-service-create --name network.bw.in
-SERVICE_ID=$(openstack rating hashmap-service-list | grep network.bw.in | awk -F'|' '{ print $3}' | sed 's/ //g')
+openstack rating hashmap service create network.bw.in
+SERVICE_ID=$(openstack rating hashmap service list | grep network.bw.in | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-openstack rating hashmap-mapping-create --service-id  ${SERVICE_ID} --type flat --cost 0.05
+openstack rating hashmap mapping create --service-id  ${SERVICE_ID} -t flat 0.05
 
 # add outgoing bandwidth costs per MB
-openstack rating hashmap-service-create --name network.bw.out
-SERVICE_ID=$(openstack rating hashmap-service-list | grep network.bw.out | awk -F'|' '{ print $3}' | sed 's/ //g')
+openstack rating hashmap service create network.bw.out
+SERVICE_ID=$(openstack rating hashmap service list | grep network.bw.out | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-openstack rating hashmap-mapping-create --service-id  ${SERVICE_ID} --type flat --cost 0.05
+openstack rating hashmap mapping create --service-id  ${SERVICE_ID} -t flat 0.05
 
 # add floating ip costs per IP
-openstack rating hashmap-service-create --name network.floating
-SERVICE_ID=$(openstack rating hashmap-service-list | grep network.floating | awk -F'|' '{ print $3}' | sed 's/ //g')
+openstack rating hashmap service create network.floating
+SERVICE_ID=$(openstack rating hashmap service list | grep network.floating | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-openstack rating hashmap-mapping-create --service-id  ${SERVICE_ID} --type flat --cost 0.05
+openstack rating hashmap mapping create --service-id  ${SERVICE_ID} -t flat 0.05
 
 echo ""
 
@@ -201,27 +203,27 @@ for i in {1..5}; do
 
     echo "Configuring cloudkitty pricing for '${DEMO_PROJECT_NAME}.'"
     # Add flavors costs per instance
-    SERVICE_ID=$(openstack rating hashmap-service-list | grep compute | awk -F'|' '{ print $3}' | sed 's/ //g')
-    FIELD_ID=$(openstack rating hashmap-field-list --service-id  ${SERVICE_ID} | grep flavor | awk -F'|' '{ print $3}' | sed 's/ //g')
+    SERVICE_ID=$(openstack rating hashmap service list | grep compute | awk -F'|' '{ print $3}' | sed 's/ //g')
+    FIELD_ID=$(openstack rating hashmap field list ${SERVICE_ID} | grep flavor | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} --type flat --cost 0.1 --value m1.micro
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} --type flat --cost 0.2 --value m1.tiny
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} --type flat --cost 0.3 --value m1.small
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} -t flat --value m1.micro 0.1
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} -t flat --value m1.tiny 0.2
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --field-id ${FIELD_ID} -t flat --value m1.small 0.3
 
     # Add ingoing bandwidth costs per MB
-    SERVICE_ID=$(openstack rating hashmap-service-list | grep network.bw.in | awk -F'|' '{ print $3}' | sed 's/ //g')
+    SERVICE_ID=$(openstack rating hashmap service list | grep network.bw.in | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --service-id  ${SERVICE_ID} --type flat --cost 0.05
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --service-id ${SERVICE_ID} -t flat 0.05
 
     # Add outgoing bandwidth costs per MB
-    SERVICE_ID=$(openstack rating hashmap-service-list | grep network.bw.out | awk -F'|' '{ print $3}' | sed 's/ //g')
+    SERVICE_ID=$(openstack rating hashmap service list | grep network.bw.out | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --service-id  ${SERVICE_ID} --type flat --cost 0.05
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --service-id ${SERVICE_ID} -t flat 0.05
 
     # Add floating ip costs per IP
-    SERVICE_ID=$(openstack rating hashmap-service-list | grep network.floating | awk -F'|' '{ print $3}' | sed 's/ //g')
+    SERVICE_ID=$(openstack rating hashmap service list | grep network.floating | awk -F'|' '{ print $3}' | sed 's/ //g')
 
-    openstack rating hashmap-mapping-create --project-id ${DEMO_PROJECT_ID} --service-id  ${SERVICE_ID} --type flat --cost 0.05
+    openstack rating hashmap mapping create --project-id ${DEMO_PROJECT_ID} --service-id ${SERVICE_ID} -t flat 0.05
 done
 
 DEMO_NET_ID=$(openstack network list | awk '/ demo-net / {print $2}')
@@ -253,3 +255,4 @@ for i in {1..5}; do
     echo "or with username '${DEMO_USERNAME}' and password '${DEMO_PASSWORD}'"
 done
 
+exit 0
