@@ -1,1 +1,3 @@
-scheduler/pyutils/__pycache__
+.vagrant
+*.tar.gz
+*.img
