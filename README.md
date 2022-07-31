@@ -56,7 +56,7 @@ cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/
 
 For regular setup:
 ```console
-cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/
+cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/swm-worker.tar.gz
 ```
 
 * Download image that will be used for compute VMs to openstack-box:
