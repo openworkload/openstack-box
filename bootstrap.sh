@@ -66,7 +66,7 @@ EOF
     yum -y install mlocate
 
     # Install guestmount for image provision
-    yum -y install libguestfs-tools libguestfs
+    yum -y install libguestfs-tools-c libguestfs-tools libguestfs
     systemctl disable libvirtd
 
     yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
@@ -221,6 +221,7 @@ EOF
 }
 
 function openstack_initialize {
+    chmod 666 /etc/kolla/admin-openrc.sh
     source /etc/kolla/admin-openrc.sh
     /home/vagrant/sync/initialize.sh
 }
