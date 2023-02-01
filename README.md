@@ -51,7 +51,7 @@ For development setup:
 cd swm-core
 make release
 ./scripts/setup.linux -t -a
-cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/
+cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.tar.gz
 ```
 
 For regular setup:
@@ -85,8 +85,9 @@ chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 ./image-umount.sh -i ${IMAGE}.img
 ```
 
-* Load the prepared image to OpenStack:
+* Load the prepared image to OpenStack (as vagrant user):
 ```console
+cd /home/vagrant/sync
 source /etc/kolla/admin-openrc.sh
 openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-22.04
 ```
