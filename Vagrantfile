@@ -4,7 +4,7 @@
 SETTINGS = {
   base_image: "bento/rockylinux-8.6",
   cpu: 4,
-  memory: 22000
+  memory: 32000
 }
 
 Vagrant.configure(2) do |config|
