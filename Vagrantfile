@@ -28,11 +28,9 @@ Vagrant.configure(2) do |config|
 
   config.vm.box = SETTINGS[:base_image]
   config.vm.network "private_network", ip: "172.28.128.2"
-  #config.vm.network "private_network", ip: 192.168.56.2
-  #config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
-  config.vm.define "openstack.openworkload.com", primary: true do |admin|
-    admin.vm.hostname = "openstack.openworkload.com"
+  config.vm.define "openstack.openworkload.org", primary: true do |admin|
+    admin.vm.hostname = "openstack.openworkload.org"
 
     admin.vm.provision :shell, path: "bootstrap.sh"
     admin.vm.synced_folder ".", "/home/vagrant/sync", disabled: false

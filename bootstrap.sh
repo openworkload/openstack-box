@@ -46,7 +46,7 @@ EOF
     cat > /etc/hosts <<-EOF
 127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1             localhost localhost.localdomain localhost6 localhost6.localdomain6
-172.28.128.2    openstack openstack.openworkload.com
+172.28.128.2    openstack openstack.openworkload.org
 EOF
 
     # Configure open vSwitch external bridge
@@ -67,7 +67,6 @@ EOF
 
     # Install guestmount for image provision
     yum -y install libguestfs-tools-c libguestfs-tools libguestfs
-    systemctl disable libvirtd
 
     yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
     ln -sf /bin/python3 /usr/bin/python
