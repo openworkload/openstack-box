@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 SETTINGS = {
-  base_image: "bento/rockylinux-8.6",
+  base_image: "bento/rockylinux-8.7",
   cpu: 4,
   memory: 32000
 }
