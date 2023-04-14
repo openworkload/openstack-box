@@ -55,13 +55,16 @@ openstack stack create -e heat-environment -t stack-example.yaml test
 
 * For development setup:
 ```console
+sudo mkdir /opt/swm
+sudo chown $(id -u) /opt/swm
+make cr
 cd swm-core
 make release
-./scripts/setup.linux -t -a
+./scripts/setup-skyport-dev.linux
 cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.tar.gz
 ```
 
-* For regular setup:
+* For regular setup replace the last command from above to:
 ```console
 cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/swm-worker.tar.gz
 ```

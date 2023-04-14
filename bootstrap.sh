@@ -65,15 +65,11 @@ EOF
     yum -y install htop net-tools bridge-utils tcpdump
     yum -y install mlocate
 
-    # Install guestmount for image provision
+    # Install guestmount for image provisioning
     yum -y install libguestfs-tools-c libguestfs-tools libguestfs
 
     yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
     ln -sf /bin/python3 /usr/bin/python
-
-    #yum -y install https://repos.fedorapeople.org/repos/openstack/openstack-yoga/rdo-release-yoga-1.el8.noarch.rpm
-    #yum -y install openvswitch libibverbs
-    #systemctl enable --now openvswitch
 }
 
 function configure_docker {

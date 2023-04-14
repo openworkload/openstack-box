@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# TODO move the script to cloud-init
+#
 
 while [[ $# -gt 0 ]]; do
 i="$1"
