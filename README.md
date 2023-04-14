@@ -6,13 +6,24 @@ OpenStack services are started in docker containers via kolla-ansible.
 ## Requirements
 
 * Vagrant >= 2.2.19
-
+* VirtualBox (run `VBoxManage --version` to ensure it works)
+* 32GB of memory for virtual machines
+* VirtualBox allows the box IP address configured in Vagrantfile. For example to allow all addresses the following commands can be executed:
+```console
+sudo mkdir /etc/vbox/
+sudo chmod 644 /etc/vbox/networks.conf
+sudo echo '* 0.0.0.0/0 ::/0' > /etc/vbox/networks.conf
+```
 
 ## Run a box
 
 ### Start VM
 ```console
 vagrant up
+```
+or if you have several providers or not sure what provider is default:
+```console
+vagrant up --provider=virtualbox
 ```
 
 ### Halt
