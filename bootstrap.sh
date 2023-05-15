@@ -67,6 +67,7 @@ EOF
 
     # Install guestmount for image provisioning
     yum -y install libguestfs-tools-c libguestfs-tools libguestfs
+    systemctl disable libvirtd
 
     yum -y install python3 python3-pip python3-devel python3-setuptools python3-pyOpenSSL
     ln -sf /bin/python3 /usr/bin/python
