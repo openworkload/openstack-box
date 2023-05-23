@@ -24,6 +24,7 @@ then
 fi
 
 
+umount_timeout=10
 mountpoint=${IMAGE##*/}
 mountpoint=/mnt/${mountpoint%.*}
 
@@ -31,17 +32,19 @@ export LIBGUESTFS_BACKEND=direct
 
 mkdir -p ${mountpoint} > /dev/null 2>&1
 
+echo "Ensure mount point is unmounted: ${mountpoint}"
 for i in {1..2};
 do
-    umount -f ${mountpoint}/sys         > /dev/null 2>&1;
-    umount -f ${mountpoint}/dev/pts     > /dev/null 2>&1;
-    umount -f ${mountpoint}/dev         > /dev/null 2>&1;
-    umount -f ${mountpoint}/proc        > /dev/null 2>&1;
+    timeout $umount_timeout umount -f ${mountpoint}/sys         > /dev/null 2>&1;
+    timeout $umount_timeout umount -f ${mountpoint}/dev/pts     > /dev/null 2>&1;
+    timeout $umount_timeout umount -f ${mountpoint}/dev         > /dev/null 2>&1;
+    timeout $umount_timeout umount -f ${mountpoint}/proc        > /dev/null 2>&1;
 
-    umount -f ${mountpoint}             > /dev/null 2>&1;
-    guestunmount ${mountpoint}          > /dev/null 2>&1;
+    timeout $umount_timeout umount -f ${mountpoint}             > /dev/null 2>&1;
+    timeout $umount_timeout guestunmount ${mountpoint}          > /dev/null 2>&1;
 done
 
+echo "Mount image $IMAGE at ${mountpoint} ..."
 guestmount -a $IMAGE -i --rw ${mountpoint}
 
 mount --bind /sys       ${mountpoint}/sys
@@ -49,5 +52,4 @@ mount --bind /dev       ${mountpoint}/dev
 mount --bind /dev/pts   ${mountpoint}/dev/pts
 mount --bind /proc      ${mountpoint}/proc
 
-
-echo "Image is mounted at ${mountpoint}"
+echo "Image is mounted"

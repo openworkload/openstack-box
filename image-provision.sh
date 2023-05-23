@@ -96,6 +96,9 @@ apt-get --yes autoremove
 apt-get --yes --purge remove ufw
 apt-get --yes --purge remove at snapd lvm2 lxcfs open-iscsi policykit-1
 
+apt-get --yes install resolvconf
+apt-get --yes install vim
+
 apt-get --yes install locales
 locale-gen en_US.UTF-8
 

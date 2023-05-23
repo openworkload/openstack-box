@@ -29,7 +29,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = SETTINGS[:base_image]
   config.vm.network "private_network", ip: "172.28.128.2"
 
-    # enable nested virtualization
+  # enable nested virtualization
   config.vm.provider "virtualbox" do |vb|
     vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']
   end

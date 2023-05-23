@@ -87,11 +87,13 @@ IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 ### Customize for development purposes (if needed):
 ```console
 sudo bash
+cd /home/vagrant/sync
 ./image-mount.sh -i ${IMAGE}.img
 mkdir /mnt/${IMAGE}/root/.ssh
 chmod 700 /mnt/${IMAGE}/root/.ssh
 vim /mnt/${IMAGE}/root/.ssh/authorized_keys  # add public key
 chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
+chroot /mnt/${IMAGE} "apt-get update; apt-get install vim mc"
 ./image-umount.sh -i ${IMAGE}.img
 ```
 
