@@ -19,7 +19,7 @@ done
 if [ -z $IMAGE ];
 then
     echo "Error: Image is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-18.04-minimal-cloudimg-amd64.img"
+    echo "Usage: ${0##*/} -i ubuntu-22.04-minimal-cloudimg-amd64.img"
     exit 1
 fi
 

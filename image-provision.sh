@@ -33,13 +33,13 @@ done
 
 if [ -z $IMAGE ]; then
     echo "ERROR: Image is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-18.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i ubuntu-22.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
 if [ -z $ARCHIVE ]; then
     echo "ERROR: Archive is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-18.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i ubuntu-22.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
     exit 1
 fi
 
@@ -88,7 +88,7 @@ echo "nameserver 8.8.8.8" > /run/resolvconf/resolv.conf
 echo "nameserver 8.8.8.8" > /run/systemd/resolve/stub-resolv.conf
 
 echo "127.0.0.1       localhost.localdomain localhost" > /etc/hosts
-echo "127.0.0.1       openstack.openworkload.com openstack" >> /etc/hosts
+echo "127.0.0.1       openstack.openworkload.org openstack" >> /etc/hosts
 
 apt-get --yes update
 apt-get --yes autoremove
@@ -98,6 +98,8 @@ apt-get --yes --purge remove at snapd lvm2 lxcfs open-iscsi policykit-1
 
 apt-get --yes install resolvconf
 apt-get --yes install vim
+apt-get --yes install mc
+apt-get --yes install libtinfo
 
 apt-get --yes install locales
 locale-gen en_US.UTF-8
@@ -138,7 +140,7 @@ systemctl enable swm
 EOF
 
 # Pull default docker image for tests purposes
-#docker pull ubuntu:18.04
+docker pull ubuntu:22.04
 
 umount -f ${mountpoint}/sys
 umount -f ${mountpoint}/dev/pts
