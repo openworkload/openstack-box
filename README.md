@@ -93,7 +93,6 @@ mkdir /mnt/${IMAGE}/root/.ssh
 chmod 700 /mnt/${IMAGE}/root/.ssh
 vim /mnt/${IMAGE}/root/.ssh/authorized_keys  # add public key
 chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
-chroot /mnt/${IMAGE} "apt-get update; apt-get install vim mc"
 ./image-umount.sh -i ${IMAGE}.img
 ```
 
