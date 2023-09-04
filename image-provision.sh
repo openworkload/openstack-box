@@ -100,6 +100,10 @@ apt-get --yes install resolvconf
 apt-get --yes install vim
 apt-get --yes install mc
 apt-get --yes install libtinfo
+apt-get --yes install net-tools
+apt-get --yes install telnet
+apt-get --yes install iputils-ping
+apt-get --yes install mlocate
 
 apt-get --yes install locales
 locale-gen en_US.UTF-8
@@ -111,6 +115,8 @@ locale-gen en_US.UTF-8
 
 apt-get --yes install docker docker.io
 echo 'DOCKER_OPTS="-H tcp://127.0.0.1:6000"' >> /etc/default/docker
+
+updatedb  # for locate
 
 ### END PROVISION IMAGE IN CHROOT
 EOF
