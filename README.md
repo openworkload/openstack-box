@@ -60,7 +60,7 @@ sudo chown $(id -u) /opt/swm
 make cr
 cd swm-core
 make release
-./scripts/setup-skyport-dev.linux
+./scripts/setup-skyport-dev.linux  # if not already set up, otherwise "scripts/setup.linux -a -t"
 cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.tar.gz
 ```
 
@@ -76,12 +76,23 @@ wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-
 ```
 
 ### Provision the image with swm:
+#### New setup:
 ```console
 vagrant ssh
 sudo bash
 cd /home/vagrant/sync
 IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 ./image-provision.sh -i ${IMAGE}.img -a swm-worker.tar.gz
+```
+#### Update:
+```console
+vagrant ssh
+sudo bash
+cd /home/vagrant/sync
+IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
+./image-mount.sh -i ${IMAGE}.img
+tar -C /mnt/${IMAGE}/opt/swm -xvzf /home/vagrant/sync/swm-worker.tar.gz
+./image-umount.sh -i ${IMAGE}.img
 ```
 
 ### Customize for development purposes (if needed):
