@@ -91,6 +91,7 @@ sudo bash
 cd /home/vagrant/sync
 IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 ./image-mount.sh -i ${IMAGE}.img
+rm -fr /mnt/${IMAGE}/opt/swm/${SWM_VERSION}
 tar -C /mnt/${IMAGE}/opt/swm -xvzf /home/vagrant/sync/swm-worker.tar.gz
 ./image-umount.sh -i ${IMAGE}.img
 ```
@@ -117,7 +118,6 @@ openstack image create --public --disk-format qcow2 --container-format bare --fi
 
 ## Troubleshooting
 
-* Image format type can be found with "file -k".
 * Use "docker ps -a" to get all kolla containers, see their health status.
 * OpenStack logs inside the box can be found in /var/lib/docker/volumes/kolla_logs/_data/
 * The compute node image must run docker on port 6000 if the job is going to run in docker containers.
