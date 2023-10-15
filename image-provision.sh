@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-#
-# TODO move the script to cloud-init
-#
 
 while [[ $# -gt 0 ]]; do
 i="$1"
@@ -114,6 +111,7 @@ locale-gen en_US.UTF-8
 #update-rc.d nfs-kernel-server enable
 
 apt-get --yes install docker docker.io
+apt-get --yes install cgroupfs-mount
 echo 'DOCKER_OPTS="-H tcp://127.0.0.1:6000"' >> /etc/default/docker
 
 updatedb  # for locate
@@ -145,10 +143,17 @@ systemctl enable swm
 ### END POST CONFIGURATION SWM IN CHROOT
 EOF
 
-# Pull default docker image for tests purposes
-docker pull ubuntu:22.04
+# Pre-pull container image to docker in VM image for tests/dev purposes
+cat << EOF | sudo chroot ${mountpoint}
+### BEGIN LOAD CONTAINER IMAGE IN CHROOT
+cgroupfs-mount
+dockerd -H unix:// &
+docker pull jupyter/datascience-notebook:hub-3.1.1
+pkill -9 dockerd
+### END LOAD CONTAINER IMAGE IN CHROOT
+EOF
 
-umount -f ${mountpoint}/sys
+umount -f -l ${mountpoint}/sys
 umount -f ${mountpoint}/dev/pts
 umount -f ${mountpoint}/dev
 umount -f ${mountpoint}/proc

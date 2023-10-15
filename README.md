@@ -60,6 +60,7 @@ sudo chown $(id -u) /opt/swm
 make cr
 cd swm-core
 make release
+SWM_VERSION=0.2.0
 ./scripts/setup-skyport-dev.linux  # if not already set up, otherwise "scripts/setup.linux -a -t"
 cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.tar.gz
 ```
@@ -69,10 +70,24 @@ cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.
 cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/swm-worker.tar.gz
 ```
 
-### Download image that will be used for compute VMs to openstack-box:
+### Prepare VM image that will be used for compute VMs in the Openstack
+### Download the image:
 ```console
 cd openstack-box
-wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img
+wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img orig.img
+```
+#### Resize the root disk of the downloaded image if needed (so it can fit huge container images):
+```console
+export LIBGUESTFS_BACKEND=direct
+qemu-img create -f qcow2 -o preallocation=metadata ./ubuntu-22.04-minimal-cloudimg-amd64.img 16G
+virt-resize --expand /dev/sda1 ./orig.img ./ubuntu-22.04-minimal-cloudimg-amd64.img
+rm -f ./orig.img
+```
+#### Get some info about the image partitions:
+```console
+export LIBGUESTFS_BACKEND=direct
+qemu-img info ./ubuntu-22.04-minimal-cloudimg-amd64.img
+virt-filesystems --long -h --all -a ./ubuntu-22.04-minimal-cloudimg-amd64.img
 ```
 
 ### Provision the image with swm:
@@ -90,6 +105,7 @@ vagrant ssh
 sudo bash
 cd /home/vagrant/sync
 IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
+SWM_VERSION=0.2.0
 ./image-mount.sh -i ${IMAGE}.img
 rm -fr /mnt/${IMAGE}/opt/swm/${SWM_VERSION}
 tar -C /mnt/${IMAGE}/opt/swm -xvzf /home/vagrant/sync/swm-worker.tar.gz
@@ -100,6 +116,7 @@ tar -C /mnt/${IMAGE}/opt/swm -xvzf /home/vagrant/sync/swm-worker.tar.gz
 ```console
 sudo bash
 cd /home/vagrant/sync
+IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 ./image-mount.sh -i ${IMAGE}.img
 mkdir /mnt/${IMAGE}/root/.ssh
 chmod 700 /mnt/${IMAGE}/root/.ssh
@@ -112,12 +129,12 @@ chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 ```console
 cd /home/vagrant/sync
 source /etc/kolla/admin-openrc.sh
+IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-22.04
 ```
 
 
 ## Troubleshooting
-
-* Use "docker ps -a" to get all kolla containers, see their health status.
+* Use "docker ps -a" to get all kolla containers, see their health status
 * OpenStack logs inside the box can be found in /var/lib/docker/volumes/kolla_logs/_data/
-* The compute node image must run docker on port 6000 if the job is going to run in docker containers.
+* The compute node image must run docker that listens to local port 6000 if the job is going to run in docker containers

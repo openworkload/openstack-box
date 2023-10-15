@@ -85,6 +85,8 @@ function configure_docker {
     #    sed -i 's|^MountFlags=.*|MountFlags=shared|' /usr/lib/systemd/system/docker.service ||
     #    sed -i '/\[Service\]/a MountFlags=shared' /usr/lib/systemd/system/docker.service
 
+    sed -i "s@ExecStart.*@& -H tcp://0.0.0.0:6000@" /lib/systemd/system/docker.service
+
     usermod -aG docker vagrant
 
     systemctl daemon-reload
