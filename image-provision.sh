@@ -137,6 +137,8 @@ EOF
 cat << EOF | sudo chroot ${mountpoint}
 ### BEGIN POST CONFIGURATION SWM IN CHROOT
 
+sed -i "s@ExecStart.*@& -H tcp://0.0.0.0:6000@" /lib/systemd/system/docker.service
+
 systemctl enable docker
 systemctl enable swm
 
