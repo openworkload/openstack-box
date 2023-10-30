@@ -4,7 +4,8 @@
 SETTINGS = {
   base_image: "bento/rockylinux-8.7",
   cpu: 4,
-  memory: 32000
+  memory: 32000,
+  disk: '120GB'
 }
 
 Vagrant.configure(2) do |config|
@@ -15,7 +16,14 @@ Vagrant.configure(2) do |config|
     else
       system('vagrant plugin install vagrant-vbguest')
     end
+    if Vagrant.has_plugin?("vagrant-disksize")
+      puts 'Plugin vagrant-disksize is already installed'
+    else
+      system('vagrant plugin install vagrant-disksize')
+    end
   end
+
+  config.disksize.size = SETTINGS[:disk]
 
   config.vbguest.installer_options = { allow_kernel_upgrade: true }
   config.vbguest.installer_hooks[:before_rebuild] = [
@@ -37,6 +45,9 @@ Vagrant.configure(2) do |config|
   config.vm.define "openstack.openworkload.org", primary: true do |admin|
     admin.vm.hostname = "openstack.openworkload.org"
 
+    config.vm.provision "shell", run: "always", inline: <<-SHELL
+    sudo xfs_growfs /dev/sda2
+    SHELL
     admin.vm.provision :shell, path: "bootstrap.sh"
     admin.vm.synced_folder ".", "/home/vagrant/sync", disabled: false
 

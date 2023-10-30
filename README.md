@@ -74,20 +74,7 @@ cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/swm-worker.tar.gz
 ### Download the image:
 ```console
 cd openstack-box
-wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img orig.img
-```
-#### Resize the root disk of the downloaded image if needed (so it can fit huge container images):
-```console
-export LIBGUESTFS_BACKEND=direct
-qemu-img create -f qcow2 -o preallocation=metadata ./ubuntu-22.04-minimal-cloudimg-amd64.img 16G
-virt-resize --expand /dev/sda1 ./orig.img ./ubuntu-22.04-minimal-cloudimg-amd64.img
-rm -f ./orig.img
-```
-#### Get some info about the image partitions:
-```console
-export LIBGUESTFS_BACKEND=direct
-qemu-img info ./ubuntu-22.04-minimal-cloudimg-amd64.img
-virt-filesystems --long -h --all -a ./ubuntu-22.04-minimal-cloudimg-amd64.img
+wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img
 ```
 
 ### Provision the image with swm:
@@ -102,14 +89,7 @@ IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
 #### Update:
 ```console
 vagrant ssh
-sudo bash
-cd /home/vagrant/sync
-IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
-SWM_VERSION=0.2.0
-./image-mount.sh -i ${IMAGE}.img
-rm -fr /mnt/${IMAGE}/opt/swm/${SWM_VERSION}
-tar -C /mnt/${IMAGE}/opt/swm -xvzf /home/vagrant/sync/swm-worker.tar.gz
-./image-umount.sh -i ${IMAGE}.img
+/home/vagrant/sync/update-swm-worker.sh -i ubuntu-22.04-minimal-cloudimg-amd64 -v 0.2.0
 ```
 
 ### Customize for development purposes (if needed):
