@@ -30,13 +30,13 @@ done
 
 if [ -z $IMAGE ]; then
     echo "ERROR: Image is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-22.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i jammy-server-cloudimg-amd64.img -a /opt/swm/current/swm-worker.tar.gz"
     exit 1
 fi
 
 if [ -z $ARCHIVE ]; then
     echo "ERROR: Archive is not specified"
-    echo "Usage: ${0##*/} -i ubuntu-22.04-minimal-cloudimg-amd64.img -a /opt/swm/1.0.1/swm-1.0.1-worker.tar.gz"
+    echo "Usage: ${0##*/} -i jammy-server-cloudimg-amd64.img -a /opt/swm/current/swm-worker.tar.gz"
     exit 1
 fi
 
@@ -101,6 +101,7 @@ apt-get --yes install net-tools
 apt-get --yes install telnet
 apt-get --yes install iputils-ping
 apt-get --yes install mlocate
+apt-get --yes install nfs-common
 
 apt-get --yes install locales
 locale-gen en_US.UTF-8

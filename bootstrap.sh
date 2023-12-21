@@ -72,6 +72,13 @@ EOF
     ln -sf /bin/python3 /usr/bin/python
 }
 
+function configure_http_server {
+    ln -s /home/vagrant/sync/http-server.service /etc/systemd/system/
+    systemctl daemon-reload http-server
+    systemctl enable http-server
+    systemctl start http-server
+}
+
 function configure_docker {
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
@@ -225,6 +232,7 @@ function openstack_initialize {
 
 initialize
 
+configure_http_server
 configure_docker
 configure_kolla
 

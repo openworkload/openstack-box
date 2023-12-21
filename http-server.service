@@ -1,0 +1,13 @@
+[Unit]
+Description=Sky Port development HTTP server helper Service
+After=network.target
+
+[Service]
+Type=simple
+User=vagrant
+WorkingDirectory=/home/vagrant/sync
+ExecStart=/usr/bin/python -m http.server 7777
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
