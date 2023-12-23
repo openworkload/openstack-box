@@ -32,6 +32,7 @@ cd /home/vagrant/sync
 
 ./image-mount.sh -i ${IMAGE}.img
 rm -fr /mnt/${IMAGE}/opt/swm/${SWM_VERSION}
+mkdir -p /mnt/${IMAGE}/opt/swm
 tar -C /mnt/${IMAGE}/opt/swm -xvzf ./swm-worker.tar.gz
 ./image-umount.sh -i ${IMAGE}.img
 
