@@ -53,16 +53,21 @@ openstack stack create -e heat-environment -t stack-example.yaml test
 
 ### Prepare SWM worker release tarball and copy it to current directory:
 
-* For development setup:
+* For development setup (from scratch):
 ```console
 sudo mkdir /opt/swm
 sudo chown $(id -u) /opt/swm
 make cr
 cd swm-core
+make worker
 make release
 SWM_VERSION=0.2.0
-./scripts/setup-skyport-dev.linux  # if not already set up, otherwise "scripts/setup.linux -a -t"
+./scripts/setup-skyport-dev.linux
 cp _build/packages/swm-${SWM_VERSION}-worker.tar.gz ../openstack-box/swm-worker.tar.gz
+```
+* For development setup (update):
+```console
+make worker
 ```
 
 * For regular setup replace the last command from above to:
