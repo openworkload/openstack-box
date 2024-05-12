@@ -29,7 +29,7 @@ wget http://cloud-images.ubuntu.com/releases/jammy/release/$IMAGE.img --output-d
 
 # Resize the image to fit a container image
 export LIBGUESTFS_BACKEND=direct
-qemu-img create -f qcow2 -o preallocation=metadata ./$IMAGE.img 18G
+qemu-img create -f qcow2 -o preallocation=metadata ./$IMAGE.img 32G
 virt-resize --expand /dev/sda1 ./$IMAGE-orig.img ./$IMAGE.img
 #rm $IMAGE-orig.img
 

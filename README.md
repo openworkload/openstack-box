@@ -44,7 +44,6 @@ vagrant reload
 ### Simple test of openstack setup
 ```console
 vagrant ssh
-source /etc/kolla/admin-openrc.sh
 cd /home/vagrant/sync
 openstack stack create -e heat-environment -t stack-example.yaml test
 ```
@@ -76,10 +75,12 @@ cp /opt/swm/swm-${SWM_VERSION}-worker.tar.gz openstack-box/swm-worker.tar.gz
 ```
 
 ### Prepare VM image that will be used for compute VMs in the Openstack
-### Download the image:
+### Download and resize the image:
 ```console
-cd openstack-box
-wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img
+vagrant ssh
+sudo bash
+cd /home/vagrant/sync
+./fetch-image.sh -i ubuntu-22.04-server-cloudimg-amd64
 ```
 
 ### Provision the image with swm:
@@ -88,20 +89,20 @@ wget http://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-
 vagrant ssh
 sudo bash
 cd /home/vagrant/sync
-IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
+IMAGE=ubuntu-22.04-server-cloudimg-amd64
 ./image-provision.sh -i ${IMAGE}.img -a swm-worker.tar.gz
 ```
 #### Update:
 ```console
 vagrant ssh
-/home/vagrant/sync/update-swm-worker.sh -i ubuntu-22.04-minimal-cloudimg-amd64 -v 0.2.0
+/home/vagrant/sync/update-swm-worker.sh -i ubuntu-22.04-server-cloudimg-amd64 -v 0.2.0
 ```
 
 ### Customize for development purposes (if needed):
 ```console
 sudo bash
 cd /home/vagrant/sync
-IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
+IMAGE=ubuntu-22.04-server-cloudimg-amd64
 ./image-mount.sh -i ${IMAGE}.img
 mkdir /mnt/${IMAGE}/root/.ssh
 chmod 700 /mnt/${IMAGE}/root/.ssh
@@ -113,13 +114,6 @@ chmod 600 /mnt/${IMAGE}/root/.ssh/authorized_keys
 ### Load the prepared image to OpenStack (as vagrant user):
 ```console
 cd /home/vagrant/sync
-source /etc/kolla/admin-openrc.sh
-IMAGE=ubuntu-22.04-minimal-cloudimg-amd64
+IMAGE=ubuntu-22.04-server-cloudimg-amd64
 openstack image create --public --disk-format qcow2 --container-format bare --file ${IMAGE}.img ubuntu-22.04
 ```
-
-
-## Troubleshooting
-* Use "docker ps -a" to get all kolla containers, see their health status
-* OpenStack logs inside the box can be found in /var/lib/docker/volumes/kolla_logs/_data/
-* The compute node image must run docker that listens to local port 6000 if the job is going to run in docker containers

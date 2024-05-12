@@ -15,8 +15,14 @@ function fix_dns {
     echo "nameserver 8.8.8.8" > /etc/resolv.conf
 }
 
+function tune_bash {
+    echo 'export PS1="\[\033[1;34m\]\u@\h:\w\$ \[\033[0m\]"' >> /root/.bashrc
+    echo 'export PS1="\[\033[1;33m\]\u@\h:\w\$ \[\033[0m\]"' >> /home/vagrant/.bashrc
+}
+
 function initialize {
     fix_dns
+    tune_bash
 
     if [[ "$(systemctl is-enabled firewalld)" == "enabled" ]]; then
         systemctl stop firewalld
@@ -37,6 +43,10 @@ EOF
 
     systemctl enable iptables
     systemctl start iptables
+
+    # Enable internet access in VMs:
+    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+    sysctl -p
 
     if [[ "$(getenforce)" == "Enforcing" ]]; then
         sed -i -r "s,^SELINUX=.+$,SELINUX=permissive," /etc/selinux/config
@@ -64,6 +74,7 @@ EOF
     yum -y install openssl-devel libffi-devel libxml2-devel libxslt-devel
     yum -y install htop net-tools bridge-utils tcpdump
     yum -y install mlocate
+    yum -y install wget
 
     # Install guestmount for image provisioning
     yum -y install libguestfs-tools-c libguestfs-tools libguestfs
@@ -72,14 +83,11 @@ EOF
     ln -sf /bin/python3 /usr/bin/python
 }
 
-function configure_http_server {
-    ln -s /home/vagrant/sync/http-server.service /etc/systemd/system/
-    systemctl daemon-reload http-server
-    systemctl enable http-server
-    systemctl start http-server
-}
-
 function configure_docker {
+
+    # Enable IP forwarding in docker for local docker registry
+    echo net.ipv4.ip_forward=1 >> /usr/lib/sysctl.d/99-docker.conf
+
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
     # Also upgrade device-mapper here because of:
@@ -123,13 +131,13 @@ function configure_kolla {
     rm -fr kolla
     git clone http://github.com/openstack/kolla
     cd kolla
-    git checkout stable/$OPENSTACK_VERSION
+    git checkout unmaintained/$OPENSTACK_VERSION
 
     cd /home/vagrant
     rm -fr kolla-ansible
     git clone http://github.com/openstack/kolla-ansible
     cd kolla-ansible
-    git checkout stable/$OPENSTACK_VERSION
+    git checkout unmaintained/$OPENSTACK_VERSION
 
     pip3 install /home/vagrant/kolla-ansible
     pip3 install /home/vagrant/kolla
@@ -197,7 +205,7 @@ EOF
 }
 
 function openstack_deploy {
-    # https://docs.openstack.org/kolla-ansible/yoga/user/quickstart.html
+    # https://docs.openstack.org/kolla-ansible/latest/user/quickstart.html
     # https://www.linuxjournal.com/content/build-versatile-openstack-lab-kolla
     cp /home/vagrant/kolla-ansible/ansible/inventory/all-in-one /etc/kolla/
     sed -i '1s/^/\nlocalhost ansible_python_interpreter=python\n\n/' /etc/kolla/all-in-one
@@ -224,15 +232,16 @@ EOF
 
 function openstack_initialize {
     chmod 666 /etc/kolla/admin-openrc.sh
+    echo ". /etc/kolla/admin-openrc.sh" >> /home/vagrant/.bashrc
+    echo ". /etc/kolla/admin-openrc.sh" >> /root/.bashrc
     source /etc/kolla/admin-openrc.sh
     /home/vagrant/sync/initialize.sh
 
-    systemctl disable libvirtd
+    [ `systemctl is-enabled libvirtd` ] && echo "libvirtd is not enabled" || systemctl disable libvirtd
 }
 
 initialize
 
-configure_http_server
 configure_docker
 configure_kolla
 
